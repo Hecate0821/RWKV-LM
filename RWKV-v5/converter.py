@@ -26,7 +26,9 @@ def convert_parquet_to_jsonl(input_folder, output_file):
         # 写入 JSONL 文件，指定编码为 'utf-8'
         with open(output_file, 'w', encoding='utf-8') as jsonl_file:
             for row in combined_table.to_pylist():
-                jsonl_file.write(f"{json.dumps(row)}\n")  # 使用 json.dumps 确保使用双引号
+                text_content = row['text']
+                if len(text_content) >= 50:
+                    jsonl_file.write(f"{json.dumps(row)}\n")  # 使用 json.dumps 确保使用双引号
     else:
         print("没有找到 Parquet 文件.")
 
