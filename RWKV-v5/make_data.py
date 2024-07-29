@@ -1,5 +1,4 @@
-import json, math, random, sys, time, os, string, re, fileinput
-from concurrent.futures import ThreadPoolExecutor, as_completed
+import json, math, random, sys, time, shutil, os, string, re, fileinput
 import numpy as np
 
 """
@@ -32,46 +31,29 @@ where the data is repeated 3 times (each time with different shuffle)
 ########################################################################################################
 
 from tokenizer.rwkv_tokenizer import TRIE_TOKENIZER
-
 tokenizer = TRIE_TOKENIZER("tokenizer/rwkv_vocab_v20230424.txt")
 from src.binidx import MMapIndexedDataset
-
-# 定义输出路径变量
-OUTPUT_DIR = "./output"
-
-
 def index_file_path(prefix_path):
     return prefix_path + ".idx"
-
-
 def data_file_path(prefix_path):
     return prefix_path + ".bin"
-
-
 class MMapIndexedDatasetBuilder(object):
     def __init__(self, out_file, dtype=np.uint16):
         self._data_file = open(out_file, "wb")
         self._dtype = dtype
         self._sizes = []
         self._doc_idx = [0]
-
     def add_item(self, np_array):
         assert np_array.dtype == self._dtype
         self._data_file.write(np_array.tobytes(order="C"))
         self._sizes.append(np_array.size)
-
     def end_document(self):
         self._doc_idx.append(len(self._sizes))
-
     def finalize(self, index_file):
         self._data_file.close()
         with MMapIndexedDataset.Index.writer(index_file, self._dtype) as index:
             index.write(self._sizes, self._doc_idx)
-
-
 cnt = 0
-
-
 def add_raw(raw):
     global builder, cnt
     out = tokenizer.encode(raw)
@@ -84,8 +66,6 @@ def add_raw(raw):
     # if cnt % 500 == 0:
     #     print(cnt, end=" ", flush=True)
     # cnt += 1
-
-
 def is_prime(n):
     if n <= 1:
         return False
@@ -100,66 +80,39 @@ def is_prime(n):
         i += 6
     return True
 
-
-def count_tokens(text):
-    return len(tokenizer.encode(text))
-
-
 ########################################################################################################
-start_time = time.time()  # 开始计时
-
-
-def read_and_filter_lines(in_file):
-    with open(in_file, "r", encoding="utf-8") as file:
-        non_empty_lines = [line.strip() for line in file if line.strip()]
-    print(f"### Found {len(non_empty_lines)} non-empty lines with at least 20 tokens in {in_file}")
-    end_time = time.time()  # 结束计时
-    print(f"Time taken for reading and filtering lines: {end_time - start_time:.2f} seconds")
-    return non_empty_lines
-
-
-def shuffle_and_write_lines(non_empty_lines, temp_file, n_epoch):
-    start_time = time.time()  # 开始计时
-    with open(temp_file, "w", encoding="utf-8") as file:
-        for i in range(n_epoch):
-            print(f"Shuffle: {i + 1} out of {n_epoch}")
-            random.shuffle(non_empty_lines)
-            for entry in non_empty_lines:
-                file.write(entry + "\n")
-    end_time = time.time()  # 结束计时
-    print(f"Time taken for shuffling and writing lines: {end_time - start_time:.2f} seconds")
-
-
-def process_line(line):
-    x = json.loads(line)["text"]
-    add_raw(x)
-
-
-def build_binidx(temp_file, out_name):
-    global builder
-    builder = MMapIndexedDatasetBuilder(f"{out_name}.bin")
-    start_time = time.time()  # 开始计时
-    with fileinput.input(temp_file, encoding="utf-8") as f:
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            futures = [executor.submit(process_line, line) for line in f]
-            for future in as_completed(futures):
-                future.result()
-    builder.finalize((f"{out_name}.idx"))
-    end_time = time.time()  # 结束计时
-    print(f"Time taken for building binidx: {end_time - start_time:.2f} seconds")
-
 
 N_EPOCH = int(sys.argv[2].strip())
 IN_FILE = sys.argv[1].strip()
 OUT_NAME = os.path.splitext(os.path.basename(IN_FILE))[0]
 CTX_LEN = int(sys.argv[3].strip())
 TEMP_FILE = "make_data_temp.jsonl"
+start_time = time.time()
 print(f"### Convert {IN_FILE} to {OUT_NAME}.bin/idx...")
 
-non_empty_lines = read_and_filter_lines(IN_FILE)
-shuffle_and_write_lines(non_empty_lines, TEMP_FILE, N_EPOCH)
-build_binidx(TEMP_FILE, OUT_NAME)
+with open(IN_FILE, "r", encoding="utf-8") as file:
+    non_empty_lines = [line.strip() for line in file if line.strip()]
 
+print(f"### Found {len(non_empty_lines)} non-empty lines in {IN_FILE}")
+
+file = open(TEMP_FILE, "w", encoding="utf-8")
+for i in range(N_EPOCH):
+    print(f"Shuffle: {i+1} out of {N_EPOCH}")
+    random.shuffle(non_empty_lines)
+    for entry in non_empty_lines:
+        file.write(entry + "\n")
+file.close()
+
+########################################################################################################
+
+print("### Building binidx...")
+
+builder = MMapIndexedDatasetBuilder(f"{OUT_NAME}.bin")
+with fileinput.input(TEMP_FILE, encoding="utf-8") as ffff:
+    for line in ffff:
+        x = json.loads(line)["text"]
+        add_raw(x)
+builder.finalize((f"{OUT_NAME}.idx"))
 print("done")
 
 print("### Verifying result...")
@@ -188,13 +141,13 @@ for idx in TODO:
             print(tokenizer.decode(dix[-PREVIEW_LIMIT:]))
         except:
             try:
-                print(tokenizer.decode(dix[-PREVIEW_LIMIT - 1:]))
+                print(tokenizer.decode(dix[-PREVIEW_LIMIT - 1 :]))
             except:
-                print(tokenizer.decode(dix[-PREVIEW_LIMIT - 2:]))
+                print(tokenizer.decode(dix[-PREVIEW_LIMIT - 2 :]))
     else:
         print(tokenizer.decode(dix))
 
-print(f"{'-' * 80}\n### Final {OUT_NAME}.bin/idx has {data_size} tokens, {data_len} items. Dtype {data._index.dtype}")
+print(f"{'-'*80}\n### Final {OUT_NAME}.bin/idx has {data_size} tokens, {data_len} items. Dtype {data._index.dtype}")
 
 # if data_size >= CTX_LEN * 3:
 #     n_chunk = int(data_size // CTX_LEN) - 1
@@ -203,10 +156,11 @@ print(f"{'-' * 80}\n### Final {OUT_NAME}.bin/idx has {data_size} tokens, {data_l
 #             if is_prime(i):
 #                 print(f"\n### magic_prime = {i} (for ctxlen {CTX_LEN})")
 #                 print(f'\n--my_exit_tokens {data_size} --magic_prime {i} --ctx_len {CTX_LEN}\n')
+#                 exit(0)
 
 print("Start deleting temp file")
 try:
-    os.remove("make_data_temp.jsonl")
+    os.remove(TEMP_FILE)
 except:
     print("Failed to remove temp file")
 # 结束时打印总用时
