@@ -28,9 +28,10 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
 
 
 def process_directory(root_dir, output_file):
+    # 不删除，接着往里写就行
     # 如果output.jsonl文件已经存在，则先删除它
-    if os.path.exists(output_file):
-        os.remove(output_file)
+    # if os.path.exists(output_file):
+    #     os.remove(output_file)
 
     parquet_files = []
     # 遍历根目录下的所有子文件夹，收集所有Parquet文件
