@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import pyarrow.parquet as pq
 import json
+import argparse
 
 
 def convert_parquet_to_jsonl(parquet_file, output_file):
@@ -40,7 +41,13 @@ def process_directory(root_dir, output_file):
 
 
 if __name__ == "__main__":
+    # 设置命令行参数解析
+    parser = argparse.ArgumentParser(description="Convert Parquet files to JSONL format.")
+    parser.add_argument('root_dir', type=str, help='The root directory containing Parquet files.')
+    parser.add_argument('output_file', type=str, help='The output JSONL file name.')
 
-    root_dir = '~/data'  # 替换为你的根目录
-    output_file = 'output0730.jsonl'
+    args = parser.parse_args()
+
+    root_dir = os.path.expanduser(args.root_dir)  # 处理用户目录符号 '~'
+    output_file = args.output_file
     process_directory(root_dir, output_file)
