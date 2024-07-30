@@ -41,6 +41,6 @@ def process_directory(root_dir, output_file):
 
 if __name__ == "__main__":
 
-    root_dir = 'Data'  # 替换为你的根目录
-    output_file = 'output-test.jsonl'
+    root_dir = '~/data'  # 替换为你的根目录
+    output_file = 'output0730.jsonl'
     process_directory(root_dir, output_file)
