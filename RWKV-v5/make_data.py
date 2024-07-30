@@ -54,12 +54,20 @@ class MMapIndexedDatasetBuilder(object):
         with MMapIndexedDataset.Index.writer(index_file, self._dtype) as index:
             index.write(self._sizes, self._doc_idx)
 cnt = 0
+
+
 def add_raw(raw):
     global builder, cnt
     out = tokenizer.encode(raw)
+
+    # 过滤掉 token 小于 20 的数据
+    if len(out) < 20:
+        return  # 跳过小于 20 个 token 的文本
+
     if tokenizer.decode(out) != raw:
         print("ERROR" * 100)
         exit(0)
+
     out.append(0)  # [0] = end_of_doc for rwkv tokenizer
     builder.add_item(np.array(out, dtype=np.uint16))
     builder.end_document()

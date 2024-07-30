@@ -1,46 +1,54 @@
 import os
 
 
-def merge_files(folder_path, output_path):
+def merge_files(bin1, bin2, output_bin):
+    with open(output_bin, 'wb') as wfd:
+        for f in [bin1, bin2]:
+            with open(f, 'rb') as fd:
+                wfd.write(fd.read())
+
+
+def merge_idx_files(idx1, idx2, output_idx):
+    with open(output_idx, 'a') as wfd:
+        for f in [idx1, idx2]:
+            with open(f, 'r') as fd:
+                wfd.write(fd.read())
+
+
+def main():
+    input_path = './'  # 修改为你的输入文件夹路径
+    output_path = './output'  # 修改为你的输出文件夹路径
+
+    bin_files = sorted([f for f in os.listdir(input_path) if f.endswith('.bin')])
+    idx_files = sorted([f for f in os.listdir(input_path) if f.endswith('.idx')])
+
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    bin_files = {}
-    idx_files = {}
+    merged_bin = bin_files.pop(0)
+    merged_idx = idx_files.pop(0)
 
-    # 遍历文件夹，分类存储 bin 和 idx 文件
-    for filename in os.listdir(folder_path):
-        if filename.endswith('.bin'):
-            key = filename[:-4]  # 去掉 .bin
-            bin_files[key] = os.path.join(folder_path, filename)
-        elif filename.endswith('.idx'):
-            key = filename[:-4]  # 去掉 .idx
-            idx_files[key] = os.path.join(folder_path, filename)
+    merged_bin_path = os.path.join(input_path, merged_bin)
+    merged_idx_path = os.path.join(input_path, merged_idx)
 
-    # 合并文件
-    for key in bin_files.keys():
-        if key in idx_files:  # 确保同时存在 .bin 和 .idx 文件
-            bin_path = bin_files[key]
-            idx_path = idx_files[key]
+    for bin_file, idx_file in zip(bin_files, idx_files):
+        next_bin = os.path.join(input_path, bin_file)
+        next_idx = os.path.join(input_path, idx_file)
 
-            # 读取并合并 bin 文件
-            with open(bin_path, 'rb') as bin_file:
-                bin_data = bin_file.read()
+        new_merged_bin = os.path.join(output_path, f'merged_{merged_bin.split(".")[0]}_{bin_file.split(".")[0]}.bin')
+        new_merged_idx = os.path.join(output_path, f'merged_{merged_idx.split(".")[0]}_{idx_file.split(".")[0]}.idx')
 
-            with open(os.path.join(output_path, f'{key}_merged.bin'), 'wb') as merged_bin:
-                merged_bin.write(bin_data)
+        merge_files(merged_bin_path, next_bin, new_merged_bin)
+        merge_idx_files(merged_idx_path, next_idx, new_merged_idx)
 
-            # 读取并合并 idx 文件
-            with open(idx_path, 'rb') as idx_file:
-                idx_data = idx_file.read()
+        # 更新路径
+        merged_bin_path = new_merged_bin
+        merged_idx_path = new_merged_idx
 
-            with open(os.path.join(output_path, f'{key}_merged.idx'), 'wb') as merged_idx:
-                merged_idx.write(idx_data)
-
-            print(f'Merged {key} files into {output_path}/{key}_merged.bin and {output_path}/{key}_merged.idx')
+        # 更新文件名
+        merged_bin = f'merged_{merged_bin.split(".")[0]}_{bin_file.split(".")[0]}.bin'
+        merged_idx = f'merged_{merged_idx.split(".")[0]}_{idx_file.split(".")[0]}.idx'
 
 
-if __name__ == "__main__":
-    folder_path = "./"
-    output_path = "./"
-    merge_files(folder_path, output_path)
+if __name__ == '__main__':
+    main()
