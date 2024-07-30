@@ -63,9 +63,9 @@ def add_raw(raw):
     out.append(0)  # [0] = end_of_doc for rwkv tokenizer
     builder.add_item(np.array(out, dtype=np.uint16))
     builder.end_document()
-    # if cnt % 500 == 0:
-    #     print(cnt, end=" ", flush=True)
-    # cnt += 1
+    if cnt % 5000 == 0:
+        print(cnt, end=" ", flush=True)
+    cnt += 1
 def is_prime(n):
     if n <= 1:
         return False
