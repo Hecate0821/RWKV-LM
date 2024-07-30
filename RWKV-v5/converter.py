@@ -26,6 +26,11 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
     os.remove(parquet_file)
     print(f"\nDeleted {parquet_file}")
 
+    # 释放内存
+    del table
+    del df
+    gc.collect()
+
 
 def process_directory(root_dir, output_file):
     # 不删除，接着往里写就行
