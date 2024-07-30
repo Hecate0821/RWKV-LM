@@ -3,6 +3,7 @@ import pandas as pd
 import pyarrow.parquet as pq
 import json
 import argparse
+from tqdm import tqdm
 
 
 def convert_parquet_to_jsonl(parquet_file, output_file):
@@ -17,13 +18,13 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
 
     # 将DataFrame转换为JSON行格式
     with open(output_file, 'a', encoding='utf-8') as f:
-        for record in df['text']:
+        for record in tqdm(df['text'], desc=f'Processing {parquet_file}'):
             json_record = json.dumps({"text": record}, ensure_ascii=False)
             f.write(json_record + '\n')
 
     # 删除源Parquet文件
     os.remove(parquet_file)
-    print(f"Deleted {parquet_file}")
+    print(f"\nDeleted {parquet_file}")
 
 
 def process_directory(root_dir, output_file):
@@ -31,13 +32,21 @@ def process_directory(root_dir, output_file):
     if os.path.exists(output_file):
         os.remove(output_file)
 
-    # 遍历根目录下的所有子文件夹
+    parquet_files = []
+    # 遍历根目录下的所有子文件夹，收集所有Parquet文件
     for subdir, _, files in os.walk(root_dir):
         for file in files:
             if file.endswith('.parquet'):
-                parquet_file = os.path.join(subdir, file)
-                print(f"Processing {parquet_file}")
-                convert_parquet_to_jsonl(parquet_file, output_file)
+                parquet_files.append(os.path.join(subdir, file))
+
+    total_files = len(parquet_files)
+
+    # 添加总进度条
+    with tqdm(total=total_files, desc='Total Progress') as pbar:
+        for parquet_file in parquet_files:
+            print(f"Processing {parquet_file}")
+            convert_parquet_to_jsonl(parquet_file, output_file)
+            pbar.update(1)  # 更新总进度条
 
 
 if __name__ == "__main__":
