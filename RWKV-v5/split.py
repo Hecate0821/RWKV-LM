@@ -43,7 +43,7 @@ def split_jsonl_file(input_file, chunk_size, output_path):
 
 
 if __name__ == '__main__':
-    input_file = 'output_2 - 副本.jsonl'  # 替换为你的JSONL文件路径
+    input_file = 'output0730.jsonl'  # 替换为你的JSONL文件路径
     output_path = 'jsonl_chunk'
-    chunk_size = 10000  # 替换为你想要的分片行数
+    chunk_size = 3000000  # 替换为你想要的分片行数
     split_jsonl_file(input_file, chunk_size, output_path)
