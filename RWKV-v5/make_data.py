@@ -89,7 +89,6 @@ def is_prime(n):
     return True
 
 ########################################################################################################
-
 N_EPOCH = int(sys.argv[2].strip())
 IN_FILE = sys.argv[1].strip()
 OUT_NAME = os.path.splitext(os.path.basename(IN_FILE))[0]
