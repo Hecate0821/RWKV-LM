@@ -4,6 +4,7 @@ import pyarrow.parquet as pq
 import json
 import argparse
 from tqdm import tqdm
+import gc
 
 
 def convert_parquet_to_jsonl(parquet_file, output_file):
@@ -65,4 +66,9 @@ if __name__ == "__main__":
 
     root_dir = os.path.expanduser(args.root_dir)  # 处理用户目录符号 '~'
     output_file = args.output_file
-    process_directory(root_dir, output_file)
+    try:
+        process_directory(root_dir, output_file)
+    except MemoryError:
+        print("Memory error")
+        gc.collect()
+        process_directory(root_dir, output_file)
