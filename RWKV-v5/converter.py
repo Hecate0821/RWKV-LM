@@ -8,7 +8,7 @@ import gc
 from memory_profiler import profile
 
 
-@profile()
+@profile
 def convert_parquet_to_jsonl(parquet_file, output_file):
     # 使用pyarrow逐行读取Parquet文件
     table = pq.read_table(parquet_file)
@@ -35,7 +35,7 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
     gc.collect()
 
 
-@profile()
+@profile
 def process_directory(root_dir, output_file):
     # 不删除，接着往里写就行
     # 如果output.jsonl文件已经存在，则先删除它
