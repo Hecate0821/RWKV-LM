@@ -5,10 +5,8 @@ import json
 import argparse
 from tqdm import tqdm
 import gc
-from memory_profiler import profile
 
 
-@profile
 def convert_parquet_to_jsonl(parquet_file, output_file):
     # 使用pyarrow逐行读取Parquet文件
     table = pq.read_table(parquet_file)
@@ -35,7 +33,6 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
     gc.collect()
 
 
-@profile
 def process_directory(root_dir, output_file):
     # 不删除，接着往里写就行
     # 如果output.jsonl文件已经存在，则先删除它
@@ -54,6 +51,7 @@ def process_directory(root_dir, output_file):
     # 添加总进度条
     with tqdm(total=total_files, desc='Total Progress') as pbar:
         for parquet_file in parquet_files:
+            gc.collect()
             print(f"Processing {parquet_file}")
             convert_parquet_to_jsonl(parquet_file, output_file)
             pbar.update(1)  # 更新总进度条
