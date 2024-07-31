@@ -5,9 +5,7 @@ import json
 import argparse
 from tqdm import tqdm
 import gc
-import tracemalloc
 
-tracemalloc.start()
 
 def convert_parquet_to_jsonl(parquet_file, output_file):
     # 使用pyarrow逐行读取Parquet文件
@@ -34,12 +32,6 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
     del df
     gc.collect()
 
-    snapshot = tracemalloc.take_snapshot()
-    top_stats = snapshot.statistics('lineno')
-
-    print("[top 10 memory usage]")
-    for stat in top_stats[:10]:
-        print(stat)
 
 
 def process_directory(root_dir, output_file):
