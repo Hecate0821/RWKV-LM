@@ -7,6 +7,7 @@ from tqdm import tqdm
 import gc
 
 
+
 def convert_parquet_to_jsonl(parquet_file, output_file):
     # 使用pyarrow逐行读取Parquet文件
     table = pq.read_table(parquet_file)
@@ -28,9 +29,11 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
     print(f"\nDeleted {parquet_file}")
 
     # 释放内存
-    del table
     del df
+    del table
+
     gc.collect()
+
 
 
 def process_directory(root_dir, output_file):
