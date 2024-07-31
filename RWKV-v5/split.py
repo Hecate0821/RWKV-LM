@@ -31,6 +31,8 @@ def split_jsonl_file(input_file, chunk_size, output_path):
                 output_file = os.path.join(output_path, output_file_name)
                 output_file = open(output_file, 'w', encoding='utf-8')
                 current_index += 1
+                if current_index % 10 == 0:
+                    print(current_index)
             if output_file is not None:
                 output_file.write(line)
 
