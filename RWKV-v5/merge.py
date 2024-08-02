@@ -1,6 +1,8 @@
 import dask.dataframe as dd
 import argparse
+import time
 
+start_time = time.time()
 # 创建命令行参数解析器
 parser = argparse.ArgumentParser(description='Read and merge Parquet files using Dask.')
 
@@ -17,4 +19,4 @@ df = dd.read_parquet(args.input_path + "/**/*.parquet")
 # 输出合并后的 Parquet 文件
 df.to_parquet(args.output_path + "/merged.parquet")
 
-print(f'Merged Parquet files from {args.input_path} to {args.output_path}')
+print(f'Merged Parquet files from {args.input_path} to {args.output_path}, time cost: {time.time() - start_time}')
