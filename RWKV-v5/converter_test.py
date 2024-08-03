@@ -25,8 +25,8 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
             f.write(json_record + '\n')
 
     # 删除源Parquet文件
-    # os.remove(parquet_file)
-    # print(f"\nDeleted {parquet_file}")
+    os.remove(parquet_file)
+    print(f"\nDeleted {parquet_file}")
 
     # 释放内存
     del df
@@ -42,22 +42,23 @@ def process_directory(root_dir, output_file):
     # if os.path.exists(output_file):
     #     os.remove(output_file)
 
-    parquet_files = []
-    # 遍历根目录下的所有子文件夹，收集所有Parquet文件
-    for subdir, _, files in os.walk(root_dir):
-        for file in files:
-            if file.endswith('.parquet'):
-                parquet_files.append(os.path.join(subdir, file))
-
-    total_files = len(parquet_files)
-
-    # 添加总进度条
-    with tqdm(total=total_files, desc='Total Progress') as pbar:
-        for parquet_file in parquet_files:
-            gc.collect()
-            print(f"Processing {parquet_file}")
-            convert_parquet_to_jsonl(parquet_file, output_file)
-            pbar.update(1)  # 更新总进度条
+    # parquet_files = []
+    # # 遍历根目录下的所有子文件夹，收集所有Parquet文件
+    # for subdir, _, files in os.walk(root_dir):
+    #     for file in files:
+    #         if file.endswith('.parquet'):
+    #             parquet_files.append(os.path.join(subdir, file))
+    #
+    # total_files = len(parquet_files)
+    #
+    # # 添加总进度条
+    # with tqdm(total=total_files, desc='Total Progress') as pbar:
+    #     for parquet_file in parquet_files:
+    #         gc.collect()
+    #         print(f"Processing {parquet_file}")
+    #         convert_parquet_to_jsonl(parquet_file, output_file)
+    #         pbar.update(1)  # 更新总进度条
+    convert_parquet_to_jsonl(root_dir, output_file)
 
 
 if __name__ == "__main__":
