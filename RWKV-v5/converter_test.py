@@ -5,11 +5,13 @@ import json
 import argparse
 from tqdm import tqdm
 import gc
+import time
 
 
 
 def convert_parquet_to_jsonl(parquet_file, output_file):
     # 使用pyarrow逐行读取Parquet文件
+    print("Reading parquet file:", parquet_file)
     table = pq.read_table(parquet_file)
     df = table.to_pandas()
 
@@ -76,4 +78,6 @@ if __name__ == "__main__":
     except MemoryError:
         print("Memory error")
         gc.collect()
+        start_time = time.time()
         process_directory(root_dir, output_file)
+        print(f"Processed {time.time() - start_time} seconds")
