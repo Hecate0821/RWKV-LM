@@ -25,8 +25,8 @@ def convert_parquet_to_jsonl(parquet_file, output_file):
             f.write(json_record + '\n')
 
     # 删除源Parquet文件
-    # os.remove(parquet_file)
-    # print(f"\nDeleted {parquet_file}")
+    os.remove(parquet_file)
+    print(f"\nDeleted {parquet_file}")
 
     # 释放内存
     del df
